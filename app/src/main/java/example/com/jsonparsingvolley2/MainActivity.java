@@ -41,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getJsonObjectRequest() {
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this);
+
         String url = "https://siva123.000webhostapp.com/php/read_json.php";
 
         JsonArrayRequest req = new JsonArrayRequest(url,
@@ -78,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Adding request to request queue
-        AppController.getInstance().addToRequestQueue(req);
+        // Add the request to the RequestQueue.
+        queue.add(req);
     }
 }
