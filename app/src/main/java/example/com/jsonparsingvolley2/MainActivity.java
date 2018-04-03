@@ -1,5 +1,6 @@
 package example.com.jsonparsingvolley2;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -28,6 +29,9 @@ public class MainActivity extends AppCompatActivity {
     private ListView listView;
     private ArrayAdapter<String> adapter;
     private List<String> namesList;
+    // Creating Progress dialog.
+    ProgressDialog progressDialog;
+
     private static final String TAG = MainActivity.class.getSimpleName();
 
     @Override
@@ -37,51 +41,53 @@ public class MainActivity extends AppCompatActivity {
 
         listView = findViewById(R.id.list_view);
         namesList = new ArrayList<>();
-        getJsonObjectRequest();
+        progressDialog = new ProgressDialog(MainActivity.this);
+        progressDialog.setMessage("Please Wait, data loading");
+        progressDialog.show();
+        getStringRequest();
     }
 
-    private void getJsonObjectRequest() {
+    private void getStringRequest() {
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
-
         String url = "https://siva123.000webhostapp.com/php/read_json.php";
 
-        JsonArrayRequest req = new JsonArrayRequest(url,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        Log.d("VINCY", response.toString());
-
-                        try {
-                            // Parsing json array response
-                            // loop through each json object
-
-                            for (int i = 0; i < response.length(); i++) {
-                                JSONObject person = (JSONObject) response.get(i);
-                                String name = person.getString("name");
-                                namesList.add(name);
-                            }
-                            // setting datas into the adapter
-                            adapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_list_item_1, namesList);
-                            // setting adapter in the list
-                            listView.setAdapter(adapter);
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        }
-
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                JSONArray mJsonArray;
+                try {
+                    mJsonArray = new JSONArray(response);
+                    for (int i = 0; i < mJsonArray.length(); i++) {
+                        JSONObject person = (JSONObject) mJsonArray.get(i);
+                        String name = person.getString("name");
+                        namesList.add(name);
                     }
-                }, new Response.ErrorListener() {
+                    // Hiding the progress dialog after all task complete.
+                    progressDialog.dismiss();
+                    // setting datas into the adapter
+                    adapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_list_item_1, namesList);
+                    // setting adapter in the list
+                    listView.setAdapter(adapter);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                // setting datas into the adapter
+                adapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_list_item_1, namesList);
+                // setting adapter in the list
+                listView.setAdapter(adapter);
+
+            }
+        }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                VolleyLog.d(TAG, "Error: " + error.getMessage());
-                Toast.makeText(getApplicationContext(),
-                        error.getMessage(), Toast.LENGTH_SHORT).show();
+                // Hiding the progress dialog after all task complete.
+                progressDialog.dismiss();
+                Toast.makeText(getApplicationContext(), "Sorry, no data available", Toast.LENGTH_LONG).show();
             }
         });
-
         // Add the request to the RequestQueue.
-        queue.add(req);
+        queue.add(stringRequest);
     }
 }
