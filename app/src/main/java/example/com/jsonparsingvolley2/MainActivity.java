@@ -70,12 +70,6 @@ public class MainActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
-                // setting datas into the adapter
-                adapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_list_item_1, namesList);
-                // setting adapter in the list
-                listView.setAdapter(adapter);
-
             }
         }, new Response.ErrorListener() {
             @Override
